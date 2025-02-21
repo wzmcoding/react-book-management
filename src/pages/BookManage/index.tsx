@@ -3,6 +3,7 @@ import './index.css';
 import { useEffect, useState } from 'react';
 import { list } from '../../interfaces';
 import { CreateBookModal } from './CreateBookModal';
+import { UpdateBookModal } from './UpdateBookModal';
 
 interface Book {
     id: number;
@@ -16,7 +17,10 @@ export function BookManage() {
 
     const [bookList, setBookList] = useState<Array<Book>>([]);
     const [name, setName] = useState('');
+    const [num, setNum] = useState(0);
     const [isCreateBookModalOpen, setCraeteBookModalOpen] = useState(false);
+    const [isUpdateBookModalOpen, setUpdateBookModalOpen] = useState(false);
+    const [updateId, setUpdateId] = useState(0);
 
     async function fetchData() {
         try {
@@ -32,7 +36,7 @@ export function BookManage() {
 
     useEffect(() => {
         fetchData();
-    }, [name]);
+    }, [name, num]);
 
     async function searchBook(values: { name: string }) {
         setName(values.name);
@@ -41,8 +45,12 @@ export function BookManage() {
     return <div id="bookManage">
         <CreateBookModal isOpen={isCreateBookModalOpen} handleClose={() => {
             setCraeteBookModalOpen(false);
-            setName('');
+            setNum(Math.random());
         }}></CreateBookModal>
+        <UpdateBookModal id={updateId} isOpen={isUpdateBookModalOpen} handleClose={() => {
+            setUpdateBookModalOpen(false);
+            setNum(Math.random());
+        }}></UpdateBookModal>
         <h1>图书管理系统</h1>
         <div className="content">
             <div className='book-search'>
@@ -81,7 +89,10 @@ export function BookManage() {
                             <div>{book.author}</div>
                             <div className='links'>
                                 <a href="#">详情</a>
-                                <a href="#">编辑</a>
+                                <a href="#" onClick={() => {
+                                    setUpdateId(book.id);
+                                    setUpdateBookModalOpen(true);
+                                }}>编辑</a>
                                 <a href="#">删除</a>
                             </div>
                         </Card>

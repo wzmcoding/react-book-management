@@ -1,10 +1,12 @@
-import { Button, Form, Input, Modal, message } from "antd";
+import { Form, Input, Modal, message } from "antd";
 import { useForm } from "antd/es/form/Form";
 import TextArea from "antd/es/input/TextArea";
-import { create, CreateBook } from "../../interfaces";
 import { CoverUpload } from "./CoverUpload";
+import { detail, update } from "../../interfaces";
+import { useEffect } from "react";
 
-interface CreateBookModalProps {
+interface UpdateBookModalProps {
+    id: number;
     isOpen: boolean;
     handleClose: Function
 }
@@ -12,29 +14,58 @@ const layout = {
     labelCol: { span: 6 },
     wrapperCol: { span: 18 }
 }
-export function CreateBookModal(props: CreateBookModalProps) {
 
-    const [form] = useForm<CreateBook>();
+export interface UpdateBook {
+    id: number;
+    name: string;
+    author: string;
+    description: string;
+    cover: string;
+}
 
-    const handleOk = async function() {
-        await form.validateFields();
-    
-        const values = form.getFieldsValue();
-    
+export function UpdateBookModal(props: UpdateBookModalProps) {
+
+    const [form] = useForm<UpdateBook>();
+    async function query() {
+        if (!props.id) {
+            return;
+        }
         try {
-            const res = await create(values);
-    
-            if(res.status === 201 || res.status === 200) {
-                message.success('创建成功');
-                form.resetFields();
-                props.handleClose();
+            const res = await detail(props.id);
+            const { data } = res;
+            if (res.status === 200 || res.status === 201) {
+                form.setFieldValue('id', data.id);
+                form.setFieldValue('name', data.name);
+                form.setFieldValue('author', data.author);
+                form.setFieldValue('description', data.description);
+                form.setFieldValue('cover', data.cover);
             }
-        } catch(e: any) {
+        } catch (e: any) {
             message.error(e.response.data.message);
         }
     }
 
-    return <Modal title="新增图书" open={props.isOpen} onOk={handleOk} onCancel={() => props.handleClose()} okText={'创建'}>
+    useEffect(() => {
+        query();
+    }, [props.id]);
+    const handleOk = async function () {
+        await form.validateFields();
+
+        const values = form.getFieldsValue();
+
+        try {
+            const res = await update({ ...values, id: props.id });
+
+            if (res.status === 201 || res.status === 200) {
+                message.success('更新成功');
+                props.handleClose();
+            }
+        } catch (e: any) {
+            message.error(e.response.data.message);
+        }
+    }
+
+    return <Modal title="更新图书" open={props.isOpen} onOk={handleOk} onCancel={() => props.handleClose()} okText={'更新'}>
         <Form
             form={form}
             colon={false}
@@ -65,7 +96,7 @@ export function CreateBookModal(props: CreateBookModalProps) {
                     { required: true, message: '请输入图书描述!' },
                 ]}
             >
-                <TextArea/>
+                <TextArea />
             </Form.Item>
             <Form.Item
                 label="封面"
@@ -74,7 +105,7 @@ export function CreateBookModal(props: CreateBookModalProps) {
                     { required: true, message: '请上传图书封面!' },
                 ]}
             >
-                <CoverUpload onChange={(url: string) => form.setFieldValue('cover', url)} />
+                <CoverUpload></CoverUpload>
             </Form.Item>
         </Form>
     </Modal>
