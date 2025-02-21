@@ -14,10 +14,11 @@ interface Book {
 export function BookManage(){
 
     const [bookList, setBookList] = useState<Array<Book>>([]);
+    const [name, setName] = useState('');
 
     async function fetchData() {
         try {
-            const data = await list();
+            const data = await list(name);
             
             if(data.status === 201 || data.status === 200) {
                 setBookList(data.data);
@@ -29,13 +30,18 @@ export function BookManage(){
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [name]);
+
+    async function searchBook(values: { name: string}) {
+        setName(values.name);
+    }
 
     return <div id="bookManage">
         <h1>图书管理系统</h1>
         <div className="content">
             <div className='book-search'>
                 <Form
+                    onFinish={searchBook}
                     name="search"
                     layout='inline'
                     colon={false}
