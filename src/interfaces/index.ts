@@ -1,5 +1,12 @@
 import axios from "axios";
 
+export interface CreateBook {
+    name: string;
+    author: string;
+    description: string;
+    cover: string;
+}
+
 const axiosInstance = axios.create({
     baseURL: 'http://localhost:3003/',
     timeout: 3000
@@ -22,5 +29,14 @@ export async function list(name: string) {
         params: {
             name
         }
+    });
+}
+
+export async function create(book: CreateBook) {
+    return await axiosInstance.post('/book/create', {
+        name: book.name,
+        author: book.author,
+        description: book.description,
+        cover: book.cover
     });
 }

@@ -2,6 +2,7 @@ import { Button, Card, Form, Input, message } from 'antd';
 import './index.css';
 import { useEffect, useState } from 'react';
 import { list } from '../../interfaces';
+import { CreateBookModal } from './CreateBookModal';
 
 interface Book {
     id: number;
@@ -11,19 +12,20 @@ interface Book {
     cover: string;
 }
 
-export function BookManage(){
+export function BookManage() {
 
     const [bookList, setBookList] = useState<Array<Book>>([]);
     const [name, setName] = useState('');
+    const [isCreateBookModalOpen, setCraeteBookModalOpen] = useState(false);
 
     async function fetchData() {
         try {
             const data = await list(name);
-            
-            if(data.status === 201 || data.status === 200) {
+
+            if (data.status === 201 || data.status === 200) {
                 setBookList(data.data);
             }
-        } catch(e: any) {
+        } catch (e: any) {
             message.error(e.response.data.message);
         }
     }
@@ -32,11 +34,15 @@ export function BookManage(){
         fetchData();
     }, [name]);
 
-    async function searchBook(values: { name: string}) {
+    async function searchBook(values: { name: string }) {
         setName(values.name);
     }
 
     return <div id="bookManage">
+        <CreateBookModal isOpen={isCreateBookModalOpen} handleClose={() => {
+            setCraeteBookModalOpen(false);
+            setName('');
+        }}></CreateBookModal>
         <h1>图书管理系统</h1>
         <div className="content">
             <div className='book-search'>
@@ -53,7 +59,10 @@ export function BookManage(){
                         <Button type="primary" htmlType="submit">
                             搜索图书
                         </Button>
-                        <Button type="primary" htmlType="submit" style={{background: 'green'}} >
+                        <Button type="primary" htmlType="submit" style={{ background: 'green' }} onClick={() => {
+                            setCraeteBookModalOpen(true);
+                        }
+                        }>
                             添加图书
                         </Button>
                     </Form.Item>
@@ -77,7 +86,7 @@ export function BookManage(){
                             </div>
                         </Card>
                     })
-                }    
+                }
             </div>
         </div>
     </div>
